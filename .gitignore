@@ -30,7 +30,3 @@ __pycache__
 
 # data
 records.txt
-
-# datasets
-# Steam Store Games (Clean dataset) from https://www.kaggle.com/nikdavis/steam-store-games
-/backend/steam-store-games

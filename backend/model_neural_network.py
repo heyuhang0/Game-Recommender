@@ -31,7 +31,7 @@ index_to_steam_app_id = {v: k for k, v in steam_app_id_to_index.items()}
 
 
 def recommend(steam_app_ids: List[int], n: int = 20) -> List[int]:
-    query_ids = [steam_app_id_to_index.get(i, UNK_GAME) for i in steam_app_ids]
+    query_ids = [steam_app_id_to_index.get(i, UNK_ID) for i in steam_app_ids]
     model.eval()
     with torch.no_grad():
         scores = model(torch.LongTensor([query_ids])).detach().cpu()[0].numpy()

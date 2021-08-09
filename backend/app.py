@@ -1,4 +1,5 @@
 import csv
+import json
 import random
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Union
@@ -7,6 +8,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, validator
 from typing_extensions import Literal
 
+from .model_combined import recommend as combined_recommender
 from .model_neural_network import recommend as neural_recommender
 from .model_random import RandomRecommender
 
@@ -30,7 +32,7 @@ class SteamGame(NamedTuple):
 
 
 def load_games() -> Dict[int, SteamGame]:
-    steam_ds_path = base_path / "steam-store-games"
+    steam_ds_path = base_path.parent / "data" / "steam-store-games"
 
     game_names: Dict[int, str] = {}
     with open(steam_ds_path / "steam.csv", encoding="utf-8") as fp:
@@ -96,11 +98,16 @@ class RecommendRequest(BaseModel):
 
 
 ENGINES = {
-    "random": RandomRecommender([g.app_id for g in games.values()]),
+    "combined": combined_recommender,
     "neural": neural_recommender,
+    "random": RandomRecommender([g.app_id for g in games.values()]),
 }
 
-ENGINES_WEIGHTS = {"random": 0.2, "neural": 0.8}
+ENGINES_WEIGHTS = {
+    "combined": 0.4,
+    "neural": 0.4,
+    "random": 0.2,
+}
 
 
 @app.post("/api/recommend")
@@ -110,6 +117,14 @@ async def recommend_games(request: RecommendRequest):
     )[0]
     engine = ENGINES[engine_name]
     recommended = engine(request.games, request.limit)
+    with open("records.txt", "a", encoding="utf-8") as fp:
+        record = {
+            "engine": engine_name,
+            "queries": request.games,
+            "action": "recommend",
+        }
+        fp.write(json.dumps(record))
+        fp.write("\n")
     return {
         "engine": engine_name,
         "queries": [games[app_id].to_json() for app_id in request.games],
