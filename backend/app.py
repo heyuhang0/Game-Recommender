@@ -1,6 +1,7 @@
 import csv
 import json
 import random
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Union
 
@@ -104,9 +105,9 @@ ENGINES = {
 }
 
 ENGINES_WEIGHTS = {
-    "combined": 0.4,
-    "neural": 0.4,
-    "random": 0.2,
+    "combined": 0.45,
+    "neural": 0.45,
+    "random": 0.1,
 }
 
 
@@ -123,6 +124,8 @@ async def recommend_games(request: RecommendRequest):
             "queries": request.games,
             "action": "recommend",
         }
+        fp.write(str(datetime.now()))
+        fp.write("\t")
         fp.write(json.dumps(record))
         fp.write("\n")
     return {
@@ -156,6 +159,8 @@ class Action(BaseModel):
 @app.post("/api/record")
 async def record_action(action: Action):
     with open("records.txt", "a", encoding="utf-8") as fp:
+        fp.write(str(datetime.now()))
+        fp.write("\t")
         fp.write(action.json())
         fp.write("\n")
     return {}
