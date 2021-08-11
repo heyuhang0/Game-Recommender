@@ -30,3 +30,5 @@ __pycache__
 
 # data
 records.txt
+checkpoints
+runs
